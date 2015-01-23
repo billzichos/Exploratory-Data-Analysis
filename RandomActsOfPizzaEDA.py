@@ -15,9 +15,8 @@
 import json
 import nltk
 from nltk.probability import FreqDist
-#import csv
-#import os
 import re
+import numpy
 
 
 #******************************************************
@@ -32,7 +31,8 @@ def bzWordCount(text):
 def bzLexicalDiversity(text):
         return len(set([words.lower() for words in nltk.word_tokenize(text)])) / len(nltk.word_tokenize(text))
 
-
+def bzCorrCoef(list1):
+        return numpy.corrcoef(list1,[item['requester_received_pizza'] for item in data])[0,1]
 #******************************************************
 # Read in the training and test files
 #******************************************************
@@ -50,6 +50,13 @@ test_data = json.load(json_test_data)
 # Add features to the datasets
 #******************************************************
 for item in data:
+        item['SentCount']=0
+        item['WordCount']=0
+        item['LexicalDiversity']=0
+        item['Picture']=0
+        item['CurseWordFlag']=0
+
+for item in data:
 	if len(item['request_text'])>0:
 		item['SentCount']=bzSentenceCount(item['request_text'])
 		item['WordCount']=bzWordCount(item['request_text'])
@@ -63,8 +70,15 @@ for item in data:
 	else:
 		item['Picture']=0
 
+# replace with the badWords I accumulated in a private file.
+badWords = ['crap', 'poop']
 
-#len([item for item in data if item['RequestTextFlag']==0])
+
+
+for item in data:
+        for word in nltk.word_tokenize(item['request_text']):
+                if word in badWords:
+                        item['CurseWordFlag']=1
 
 
 ## Let's explore differences b/w successful requests and unsuccessful.
@@ -78,41 +92,53 @@ print('...' + str((len([item for item in data if item['requester_received_pizza'
 
 
 #*******************************************************************************
-# Question: Is there anything interesting about word counts?
-# Answer: Yes
+# Question: Do word counts correlate with conversion?
+# Answer: Somewhat
+# Correlation Coefficient: 0.1253
 #*******************************************************************************
-print('Begin calculating average word counts...')
+print('Do word counts correlate with conversion?')
 
 goodAvgWordCnt = sum([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1]) / len([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1])
-print('...Average word count for converted requests: ' + str(goodAvgWordCnt))
 badAvgWordCnt = sum([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0]) / len([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0])
+
+print('...Average word count for converted requests: ' + str(goodAvgWordCnt))
 print('...Average word count for unconverted requests: ' + str(badAvgWordCnt))
 
+print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['WordCount'] for item in data])))
+
 
 
 #*******************************************************************************
-# Question: Is there anything interesting about sentence counts?
-# Answer: Yes
+# Question: Do sentence counts correlate with conversion?
+# Answer: Somewhat
+# Correlation Coefficient: 0.1226
 #*******************************************************************************
-print('Begin calculating average sentence counts...')
+print('Do sentence counts correlate with conversion?')
 
 goodAvgSentCnt = sum([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1]) / len([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1])
-print('...Average sentence count for converted requests: ' + str(goodAvgSentCnt))
 badAvgSentCnt = sum([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0]) / len([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0])
+
+print('...Average sentence count for converted requests: ' + str(goodAvgSentCnt))
 print('...Average sentence count for unconverted requests: ' + str(badAvgSentCnt))
 
+print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['SentCount'] for item in data])))
+
 
 
 #*******************************************************************************
-# Question: Is there anything interesting about lexical diversity?
-# Answer: Marginal
+# Question: Does lexical diversity correlate with conversion?
+# Answer: No
+# Correlation Coefficient: -0.0651
 #*******************************************************************************
-print('Begin calculating lexical diversity...')
+print('Does lexical diversity correlate with conversion?')
 
 goodAvgLexDty = sum([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1]) / len([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1])
-print('...Average lexical diversity for converted requests: ' + str(goodAvgLexDty))
 badAvgLexDty = sum([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0]) / len([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0])
+
+print('...Average lexical diversity for converted requests: ' + str(goodAvgLexDty))
 print('...Average lexical diversity for unconverted requests: ' + str(badAvgLexDty))
+
+print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['LexicalDiversity'] for item in data])))
 
 
 
@@ -120,6 +146,7 @@ print('...Average lexical diversity for unconverted requests: ' + str(badAvgLexD
 # Question: Are there differences between word-length frequencies of converted
 #      vs. unconverted requests?
 # Answer: No
+# Correlation Coefficient: 
 #*******************************************************************************
 print('Begin calculating word length frequencies...')
       
@@ -146,6 +173,7 @@ print('...Word length frequencies for unsuccessful requests have been plotted.')
 #*******************************************************************************
 # Question: Do requests without text ever get converted?
 # Answer: Yes, >17%
+# Correlation Coefficient: See word or sentence count corr coef
 #*******************************************************************************
 print('Do requests without text ever get converted?')
 
@@ -159,12 +187,34 @@ print(noTextSum / noTextCount)
 
 #*******************************************************************************
 # Question: Are curse words a turnoff?
-# Answer:
+# Answer: No, but I believe we should change this to curse word counts or
+#      severity scores.
+# Correlation Coefficient: -0.0141
 #*******************************************************************************
 print('Are curse words a turnoff?')
+len([item['CurseWordFlag'] for item in data if item['CurseWordFlag']==1 and item['requester_received_pizza']==1])
+len([item['CurseWordFlag'] for item in data if item['CurseWordFlag']==1 and item['requester_received_pizza']==0])
+
+print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['CurseWordFlag'] for item in data])))
 
 
 
+#*******************************************************************************
+# Question: Do people with multiple requests have better success?
+# Answer:
+# Correlation Coefficient:
+#*******************************************************************************
+
+
+
+
+
+#*******************************************************************************
+# Question: Are there 5 words used frequently in the uncoverted text that are
+#      not used at all in the converted text?
+# Answer:
+# Correlation Coefficient:
+#*******************************************************************************
 
 
 
@@ -181,7 +231,8 @@ FreqDist([word.lower() for word in nltk.word_tokenize(uncnvtText) if word.isalph
 ## CRAVINGS - crave, craving, love, party, hangover, friend, friends, girlfriend, boyfriend, night, coming, late, starving, starve, birthday
 ## SCHOOL - school, class, college, university, study, exam, exams, test, cram, student, practice, team, reading, read
 ## EMPLOYMENT - job, work, unemployed, lost, unemployment, paycheck, check, cash, account, provide, husband, wife
-
+## HEALTH - doctor, checkup, medicine, pills,
+## DEPRESSION - sad
 ## I also see themes around gratitude and politeness
 ## appreciate, thanks, greatly, grateful,
 
