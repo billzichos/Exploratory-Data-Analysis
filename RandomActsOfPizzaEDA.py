@@ -33,6 +33,12 @@ def bzLexicalDiversity(text):
 
 def bzCorrCoef(list1):
         return numpy.corrcoef(list1,[item['requester_received_pizza'] for item in data])[0,1]
+
+def bzMean(numerator, denominator):
+        return numerator / denominator
+
+
+        
 #******************************************************
 # Read in the training and test files
 #******************************************************
@@ -88,24 +94,29 @@ goodRequests = [item for item in data if item['requester_received_pizza']==1]
 badRequests = [item for item in data if item['requester_received_pizza']==0]
 
 print('...' + str((len([item for item in data if item['requester_received_pizza']==1]) / len([item for item in data])) * 100) + '% of requests are fullfilled.') 
-
+print('')
 
 
 #*******************************************************************************
 # Question: Do word counts correlate with conversion?
 # Answer: Somewhat
-# Correlation Coefficient: 0.1253
+# Range: 0 - 1099
+# Correlation Coefficient: Not a normal distribution.
 #*******************************************************************************
-print('Do word counts correlate with conversion?')
-
-goodAvgWordCnt = sum([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1]) / len([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1])
-badAvgWordCnt = sum([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0]) / len([item['WordCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0])
-
-print('...Average word count for converted requests: ' + str(goodAvgWordCnt))
-print('...Average word count for unconverted requests: ' + str(badAvgWordCnt))
-
-print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['WordCount'] for item in data])))
-
+print('WORD COUNTS')
+print('')
+print('  Range: ' + str(min([item ['WordCount'] for item in data])) + ' to ' + str(max([item ['WordCount'] for item in data])))
+print('  Mean: ' + str(bzMean(sum([item ['WordCount'] for item in data]), len([item ['WordCount'] for item in data]))))
+print('  Correlation Coefficient: ' + str(bzCorrCoef([item['WordCount'] for item in data])))
+print('')
+print('  Converted requests')
+print('    Range: ' + str(min([item['WordCount'] for item in data if item['requester_received_pizza']==1])) + ' to ' + str(max([item['WordCount'] for item in data if item['requester_received_pizza']==1])))
+print('    Mean: ' + str(bzMean(sum([item ['WordCount'] for item in data if item['requester_received_pizza']==1]), len([item ['WordCount'] for item in data if item['requester_received_pizza']==1]))))
+print('')
+print('  Unconverted requests')
+print('    Range: ' + str(min([item['WordCount'] for item in data if item['requester_received_pizza']==0])) + ' to ' + str(max([item['WordCount'] for item in data if item['requester_received_pizza']==0])))
+print('    Mean: ' + str(bzMean(sum([item ['WordCount'] for item in data if item['requester_received_pizza']==0]), len([item ['WordCount'] for item in data if item['requester_received_pizza']==0]))))
+print('')
 
 
 #*******************************************************************************
@@ -113,15 +124,20 @@ print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['WordCount'] for ite
 # Answer: Somewhat
 # Correlation Coefficient: 0.1226
 #*******************************************************************************
-print('Do sentence counts correlate with conversion?')
-
-goodAvgSentCnt = sum([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1]) / len([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1])
-badAvgSentCnt = sum([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0]) / len([item['SentCount'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0])
-
-print('...Average sentence count for converted requests: ' + str(goodAvgSentCnt))
-print('...Average sentence count for unconverted requests: ' + str(badAvgSentCnt))
-
-print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['SentCount'] for item in data])))
+print('SENTENCE COUNTS')
+print('')
+print('  Range: ' + str(min([item ['SentCount'] for item in data])) + ' to ' + str(max([item ['SentCount'] for item in data])))
+print('  Mean: ' + str(bzMean(sum([item ['SentCount'] for item in data]), len([item ['SentCount'] for item in data]))))
+print('  Correlation Coefficient: ' + str(bzCorrCoef([item['SentCount'] for item in data])))
+print('')
+print('  Converted requests')
+print('    Range: ' + str(min([item['SentCount'] for item in data if item['requester_received_pizza']==1])) + ' to ' + str(max([item['SentCount'] for item in data if item['requester_received_pizza']==1])))
+print('    Mean: ' + str(bzMean(sum([item ['SentCount'] for item in data if item['requester_received_pizza']==1]), len([item ['SentCount'] for item in data if item['requester_received_pizza']==1]))))
+print('')
+print('  Unconverted requests')
+print('    Range: ' + str(min([item['SentCount'] for item in data if item['requester_received_pizza']==0])) + ' to ' + str(max([item['SentCount'] for item in data if item['requester_received_pizza']==0])))
+print('    Mean: ' + str(bzMean(sum([item ['SentCount'] for item in data if item['requester_received_pizza']==0]), len([item ['SentCount'] for item in data if item['requester_received_pizza']==0]))))
+print('')
 
 
 
@@ -130,15 +146,41 @@ print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['SentCount'] for ite
 # Answer: No
 # Correlation Coefficient: -0.0651
 #*******************************************************************************
-print('Does lexical diversity correlate with conversion?')
+print('LEXICAL DIVERSITY')
+print('')
+print('  Range: ' + str(min([item ['LexicalDiversity'] for item in data])) + ' to ' + str(max([item ['LexicalDiversity'] for item in data])))
+print('  Mean: ' + str(bzMean(sum([item ['LexicalDiversity'] for item in data]), len([item ['LexicalDiversity'] for item in data]))))
+print('  Correlation Coefficient: ' + str(bzCorrCoef([item['LexicalDiversity'] for item in data])))
+print('')
+print('  Converted requests')
+print('    Range: ' + str(min([item['LexicalDiversity'] for item in data if item['requester_received_pizza']==1])) + ' to ' + str(max([item['LexicalDiversity'] for item in data if item['requester_received_pizza']==1])))
+print('    Mean: ' + str(bzMean(sum([item ['LexicalDiversity'] for item in data if item['requester_received_pizza']==1]), len([item ['LexicalDiversity'] for item in data if item['requester_received_pizza']==1]))))
+print('')
+print('  Unconverted requests')
+print('    Range: ' + str(min([item['LexicalDiversity'] for item in data if item['requester_received_pizza']==0])) + ' to ' + str(max([item['LexicalDiversity'] for item in data if item['requester_received_pizza']==0])))
+print('    Mean: ' + str(bzMean(sum([item ['LexicalDiversity'] for item in data if item['requester_received_pizza']==0]), len([item ['LexicalDiversity'] for item in data if item['requester_received_pizza']==0]))))
+print('')
 
-goodAvgLexDty = sum([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1]) / len([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==1])
-badAvgLexDty = sum([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0]) / len([item['LexicalDiversity'] for item in data if len(item['request_text'])>0 and item['requester_received_pizza']==0])
 
-print('...Average lexical diversity for converted requests: ' + str(goodAvgLexDty))
-print('...Average lexical diversity for unconverted requests: ' + str(badAvgLexDty))
 
-print('...Correlation Coeeficient: ' + str(bzCorrCoef([item['LexicalDiversity'] for item in data])))
+#*******************************************************************************
+# Question: Do picture attachments correlate with conversion?
+# Answer: 
+#*******************************************************************************
+print('PICTURES')
+print('')
+print('  Range: ' + str(min([item ['Picture'] for item in data])) + ' to ' + str(max([item ['Picture'] for item in data])))
+print('  Mean: ' + str(bzMean(sum([item ['Picture'] for item in data]), len([item ['Picture'] for item in data]))))
+print('  Correlation Coefficient: ' + str(bzCorrCoef([item['Picture'] for item in data])))
+print('')
+print('  Converted requests')
+print('    Range: ' + str(min([item['Picture'] for item in data if item['requester_received_pizza']==1])) + ' to ' + str(max([item['Picture'] for item in data if item['requester_received_pizza']==1])))
+print('    Mean: ' + str(bzMean(sum([item ['Picture'] for item in data if item['requester_received_pizza']==1]), len([item ['Picture'] for item in data if item['requester_received_pizza']==1]))))
+print('')
+print('  Unconverted requests')
+print('    Range: ' + str(min([item['Picture'] for item in data if item['requester_received_pizza']==0])) + ' to ' + str(max([item['Picture'] for item in data if item['requester_received_pizza']==0])))
+print('    Mean: ' + str(bzMean(sum([item ['Picture'] for item in data if item['requester_received_pizza']==0]), len([item ['Picture'] for item in data if item['requester_received_pizza']==0]))))
+print('')
 
 
 
